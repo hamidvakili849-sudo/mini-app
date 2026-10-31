@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090e1c">
+<title>PICO MUSIC</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ background:#090e1c;
+ color:#fff;
+ font-family:Tahoma,sans-serif;
+ min-height:100vh;
+}
+
+.app{
+ max-width:650px;
+ margin:auto;
+ padding:24px 18px;
+}
+
+header{
+ display:flex;
+ align-items:center;
+ gap:13px;
+}
+
+.logo{
+ width:48px;
+ height:48px;
+ border-radius:15px;
+ background:linear-gradient(135deg,#2585ff,#35d4dc);
+ display:grid;
+ place-items:center;
+ font-size:28px;
+}
+
+header h2{
+ margin:0;
+ letter-spacing:2px;
+}
+
+header small{
+ color:#8294b7;
+ font-size:10px;
+}
+
+.hero{
+ text-align:center;
+ padding:45px 0 28px;
+}
+
+.tag{
+ color:#65c5ff;
+ font-size:11px;
+}
+
+.hero h1{
+ font-size:36px;
+ margin:15px 0;
+}
+
+.hero h1 span{
+ color:#5dc8ff;
+}
+
+.hero p{
+ color:#9aa9c4;
+ font-size:13px;
+ line-height:2;
+}
+
+.card{
+ background:#141e33;
+ border:1px solid #293a58;
+ border-radius:22px;
+ padding:22px;
+ box-shadow:0 15px 40px #0003;
+}
+
+.tabs{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:8px;
+ margin-bottom:25px;
+}
+
+.tab{
+ background:#0c1527;
+ color:#9eacc6;
+ border:1px solid #293a58;
+}
+
+.tab.active{
+ background:#245b91;
+ color:white;
+}
+
+button{
+ width:100%;
+ border:0;
+ padding:15px;
+ border-radius:12px;
+ color:white;
+ font-weight:bold;
+ background:linear-gradient(100deg,#2878e8,#29a5bb);
+ cursor:pointer;
+ margin:8px 0;
+}
+
+button:disabled{
+ opacity:.5;
+ cursor:wait;
+}
+
+input{
+ width:100%;
+ padding:15px;
+ border-radius:12px;
+ border:1px solid #354b70;
+ background:#0c1527;
+ color:white;
+ margin:12px 0;
+}
+
+input[type=file]{
+ font-size:12px;
+}
+
+.platforms{
+ color:#8da3c7;
+ font-size:11px;
+ text-align:center;
+ margin:14px 0;
+ line-height:2;
+}
+
+.result{
+ margin-top:20px;
+ background:#14233c;
+ padding:18px;
+ border-radius:17px;
+ line-height:2;
+ overflow-wrap:anywhere;
+}
+
+.result img{
+ max-width:100%;
+ width:180px;
+ border-radius:12px;
+ display:block;
+ margin:12px 0;
+}
+
+.result a{
+ color:#73c5ff;
+}
+
+.hidden{
+ display:none!important;
+}
+
+.status{
+ color:#69d9c5;
+ font-size:12px;
+ margin-top:12px;
+}
+
+footer{
+ color:#647a9c;
+ text-align:center;
+ font-size:10px;
+ margin-top:35px;
+ letter-spacing:2px;
+}
+
+@media(max-width:400px){
+ .hero h1{font-size:29px}
+ .app{padding:18px 13px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+ <div class="logo">♫</div>
+ <div>
+  <h2>PICO MUSIC</h2>
+  <small>SMART MUSIC FINDER</small>
+ </div>
+</header>
+
+<section class="hero">
+ <span class="tag">✦ MUSIC DISCOVERY</span>
+
+ <h1>آهنگت رو <span>پیدا کن!</span></h1>
+
+ <p>
+ لینک ویدیو یا موسیقی را وارد کن،
+ یا نمونه صوتی آن را برای شناسایی بفرست.
+ </p>
+</section>
+
+<section class="card">
+
+ <div class="tabs">
+  <button class="tab active" id="linkTab">
+   🔗 جست‌وجو با لینک
+  </button>
+
+  <button class="tab" id="audioTab">
+   🎧 تشخیص آهنگ
+  </button>
+ </div>
+
+ <div id="linkSection">
+
+  <h3>لینک ویدیو یا موسیقی</h3>
+
+  <input
+   id="url"
+   type="url"
+   placeholder="https://youtube.com/..."
+   autocomplete="url"
+  >
+
+  <button id="searchButton" onclick="searchMusic()">
+   🔎 پیدا کردن اطلاعات آهنگ
+  </button>
+
+  <div class="platforms">
+   ▶ YouTube · Spotify · SoundCloud · Apple Music
+  </div>
+
+ </div>
+
+ <div id="audioSection" class="hidden">
+
+  <h3>🎵 فایل صوتی آهنگ</h3>
+
+  <p style="color:#9aa9c4;font-size:12px;line-height:2">
+   یک نمونه صوتی مجاز از ویدیو انتخاب کن تا آهنگ شناسایی شود.
+  </p>
+
+  <input
+   type="file"
+   id="audio"
+   accept="audio/*"
+  >
+
+  <button id="identifyButton" onclick="identifyMusic()">
+   ✨ تشخیص موسیقی
+  </button>
+
+ </div>
+
+</section>
+
+<div id="result" class="result hidden"></div>
+
+<div id="status" class="status"></div>
+
+<footer>
+ POWERED BY PICO MUSIC
+</footer>
+
+</div>
+
+<script>
+if(window.Telegram?.WebApp){
+ Telegram.WebApp.ready();
+ Telegram.WebApp.expand();
+}
+
+const linkTab=document.getElementById("linkTab");
+const audioTab=document.getElementById("audioTab");
+
+const linkSection=document.getElementById("linkSection");
+const audioSection=document.getElementById("audioSection");
+
+const result=document.getElementById("result");
+const statusBox=document.getElementById("status");
+
+linkTab.onclick=()=>{
+ linkSection.classList.remove("hidden");
+ audioSection.classList.add("hidden");
+
+ linkTab.classList.add("active");
+ audioTab.classList.remove("active");
+
+ result.classList.add("hidden");
+ statusBox.textContent="";
+};
+
+audioTab.onclick=()=>{
+ audioSection.classList.remove("hidden");
+ linkSection.classList.add("hidden");
+
+ audioTab.classList.add("active");
+ linkTab.classList.remove("active");
+
+ result.classList.add("hidden");
+ statusBox.textContent="";
+};
+
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ })[c]);
+}
+
+function safeURL(value){
+ try{
+  const u=new URL(value);
+  return ["https:","http:"].includes(u.protocol)?u.href:"#";
+ }catch{
+  return "#";
+ }
+}
+
+async function searchMusic(){
+
+ const url=document.getElementById("url").value.trim();
+
+ if(!url){
+  alert("لطفاً لینک را وارد کن.");
+  return;
+ }
+
+ if(safeURL(url)==="#"){
+  alert("لینک معتبر نیست.");
+  return;
+ }
+
+ const button=document.getElementById("searchButton");
+
+ button.disabled=true;
+ result.classList.remove("hidden");
+ result.textContent="⏳ در حال جست‌وجوی اطلاعات...";
+
+ try{
+
+  const response=await fetch("/api/search",{
+   method:"POST",
+   headers:{
+    "Content-Type":"application/json"
+   },
+   body:JSON.stringify({url})
+  });
+
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.message||"جست‌وجو ناموفق بود.");
+  }
+
+  const music=data.result;
+
+  result.innerHTML=`
+   <h3>🎵 نتیجه جست‌وجو</h3>
+
+   ${music.thumbnail?
+    `<img src="${escapeHTML(music.thumbnail)}" alt="کاور">`:
+    ""}
+
+   <p>🎧 عنوان: ${escapeHTML(music.title)}</p>
+
+   <p>👤 سازنده: ${escapeHTML(music.artist)}</p>
+
+   <p>🌐 منبع: ${escapeHTML(music.platform)}</p>
+
+   <a href="${safeURL(music.source)}"
+      target="_blank"
+      rel="noopener noreferrer">
+      مشاهده لینک اصلی ↗
+   </a>
+  `;
+
+ }catch(error){
+
+  result.textContent="❌ "+error.message;
+
+ }finally{
+
+  button.disabled=false;
+
+ }
+}
+
+async function identifyMusic(){
+
+ const file=document.getElementById("audio").files[0];
+
+ if(!file){
+  alert("ابتدا یک فایل صوتی انتخاب کن.");
+  return;
+ }
+
+ if(!file.type.startsWith("audio/")){
+  alert("فقط فایل صوتی انتخاب کن.");
+  return;
+ }
+
+ if(file.size>15*1024*1024){
+  alert("حجم فایل نباید بیشتر از ۱۵ مگابایت باشد.");
+  return;
+ }
+
+ const button=document.getElementById("identifyButton");
+
+ button.disabled=true;
+
+ result.classList.remove("hidden");
+ result.textContent="🎧 در حال تشخیص آهنگ...";
+
+ try{
+
+  const form=new FormData();
+  form.append("audio",file);
+
+  const response=await fetch("/api/identify",{
+   method:"POST",
+   body:form
+  });
+
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.message||"تشخیص آهنگ ناموفق بود.");
+  }
+
+  const music=data.result;
+
+  result.innerHTML=`
+   <h3>🎶 آهنگ شناسایی شد!</h3>
+
+   <p>🎵 نام آهنگ: ${escapeHTML(music.title)}</p>
+
+   <p>👤 خواننده: ${escapeHTML(music.artist)}</p>
+
+   <p>💿 آلبوم: ${escapeHTML(music.album)}</p>
+
+   <p>📅 انتشار: ${escapeHTML(music.releaseDate)}</p>
+  `;
+
+ }catch(error){
+
+  result.textContent="❌ "+error.message;
+
+ }finally{
+
+  button.disabled=false;
+
+ }
+}
+</script>
+
+</body>
+</html>
